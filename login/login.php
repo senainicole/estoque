@@ -53,6 +53,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    align-self: center;
     padding: 40px;
   }
 
@@ -143,8 +144,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <body>
 
   <div class="left">
-    <h1>Frase<br>bla definir <span>Blaablabla.</span></h1>
-    <p>vdgsj dbhedb bhdhdhdh bhdede eded debhhhh dsvvvdsvsdvds</p>
+    <img src="../gif/auf.gif" alt="Descrição do GIF">
+
   </div>
 
   <div class="right">
@@ -164,7 +165,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     </form>
 
     <div class="forgot">
-      <a href="#">esqueceu sua senha?</a>
+      <a href="#">Esqueceu sua senha?</a>
     </div>
   </div>
 
