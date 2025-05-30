@@ -16,13 +16,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
   if ($res->num_rows === 1) {
     $_SESSION['logado'] = true;
     $_SESSION['email'] = $email;
-    header("Location: index.html");
+    header("Location: ../dashboard/dashboard.php");  
     exit();
   } else {
     $erro = "Usuário ou senha inválidos.";
   }
 }
 ?>
+
+
 
 <!DOCTYPE html>
 <html lang="pt-br">
