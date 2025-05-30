@@ -1,13 +1,19 @@
 <?php
-$servername = "localhost";
-$username = "root";
-$password = ""; // deixe vazio se estiver usando XAMPP sem senha
-$dbname = "estoque";
+// conexao.php
 
-$conn = new mysqli($servername, $username, $password, $dbname);
+$host = 'localhost';
+$db   = 'estoque';
+$user = 'root';
+$pass = '';
+$charset = 'utf8mb4';
 
-// Verifica a conexão
-if ($conn->connect_error) {
-  die("Conexão falhou: " . $conn->connect_error);
+$dsn = "mysql:host=$host;dbname=$db;charset=$charset";
+
+try {
+    $pdo = new PDO($dsn, $user, $pass, [
+       PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+       PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+    ]);
+} catch (PDOException $e) {
+    die("Erro na conexão: " . $e->getMessage());
 }
-?>

@@ -1,30 +1,30 @@
 <?php
 session_start();
-include 'conexao.php';
+require_once 'conexao.php'; // conecta e define $pdo
 
 $erro = "";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-  $email = $_POST['email'];
-  $senha = $_POST['senha'];
+    // Pegue os dados do formulário
+    $email = $_POST['email'] ?? '';
+    $senha = $_POST['senha'] ?? '';
 
-  $stmt = $conn->prepare("SELECT * FROM funcionarios WHERE email = ? AND senha = ?");
-  $stmt->bind_param("ss", $email, $senha);
-  $stmt->execute();
-  $res = $stmt->get_result();
+    // Prepare a consulta para evitar SQL Injection
+    $sql = "SELECT * FROM funcionarios WHERE email = ? AND senha = ?";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([$email, $senha]);
+    $usuario = $stmt->fetch();
 
-  if ($res->num_rows === 1) {
-    $_SESSION['logado'] = true;
-    $_SESSION['email'] = $email;
-    header("Location: ../menu/menu.php");  
-    exit();
-  } else {
-    $erro = "Usuário ou senha inválidos.";
-  }
+    if ($usuario) {
+        $_SESSION['logado'] = true;
+        $_SESSION['email'] = $email;
+        header("Location: ../menu/menu.php");
+        exit();
+    } else {
+        $erro = "Usuário ou senha inválidos.";
+    }
 }
 ?>
-
-
 
 <!DOCTYPE html>
 <html lang="pt-br">
