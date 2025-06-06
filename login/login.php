@@ -1,15 +1,13 @@
 <?php
 session_start();
-require_once 'conexao.php'; // conecta e define $pdo
+require_once 'conexao.php'; 
 
 $erro = "";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Pegue os dados do formulário
     $email = $_POST['email'] ?? '';
     $senha = $_POST['senha'] ?? '';
 
-    // Prepare a consulta para evitar SQL Injection
     $sql = "SELECT * FROM funcionarios WHERE email = ? AND senha = ?";
     $stmt = $pdo->prepare($sql);
     $stmt->execute([$email, $senha]);
@@ -32,142 +30,130 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
   <meta charset="UTF-8">
   <title>Login | Estoque Augebit</title>
   <style>
-  @font-face {
-    font-family: 'Poppins';
-    src: url('../fonts/Poppins-Regular.ttf') format('truetype');
-    font-weight: normal;
-    font-style: normal;
-  }
+    @font-face {
+      font-family: 'Poppins';
+      src: url('../fonts/Poppins-Regular.ttf') format('truetype');
+    }
 
-  * { box-sizing: border-box; }
-  body {
-    margin: 0;
-    font-family: 'Poppins', sans-serif;
-    display: flex;
-    height: 100vh;
-  }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-  .left {
-    width: 50%;
-    background-color: #0D0E0F;
-    color: white;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    align-self: center;
-    padding: 40px;
-  }
+    body {
+      font-family: 'Poppins', sans-serif;
+      display: flex;
+      height: 100vh;
+      background: #f9f9f9;
+    }
 
-  .left h1 {
-    font-size: 36px;
-    margin-bottom: 10px;
-  }
+    .left {
+      flex: 1;
+      background: url('sua-imagem-aqui.jpg') no-repeat center;
+      background-size: cover;
+    }
 
-  .left h1 span {
-    color: #4b4cff;
-  }
+    .right {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #fcfcfc;
+      padding: 40px;
+    }
 
-  .left p {
-    color: #888;
-    margin-top: 20px;
-    max-width: 400px;
-    text-align: justify;
-  }
+    .container {
+      max-width: 350px;
+      width: 100%;
+    }
 
-  .right {
-    width: 50%;
-    background-color: #fff;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: 40px;
-  }
+    h2 {
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
 
-  .logo {
-    margin-bottom: 20px;
-  }
+    .subtitle {
+      font-size: 12px;
+      color: #999;
+      margin-bottom: 30px;
+    }
 
-  h2 {
-    margin: 0;
-    font-size: 24px;
-  }
+    form {
+      display: flex;
+      flex-direction: column;
+    }
 
-  .subtitle {
-    color: #999;
-    font-size: 14px;
-    margin-bottom: 20px;
-  }
+    input {
+      padding: 10px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 13px;
+      font-family: 'Poppins', sans-serif;
+    }
 
-  form {
-    display: flex;
-    flex-direction: column;
-  }
+    button {
+      padding: 12px;
+      background: #000;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 15px;
+      margin-top: 10px;
+      transition: background 0.3s;
+    }
 
-  input, select {
-    margin-bottom: 15px;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    font-family: 'Poppins', sans-serif;
-  }
+    button:hover {
+      background: #333;
+    }
 
-  button {
-    padding: 12px;
-    background-color: #000;
-    color: #fff;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-family: 'Poppins', sans-serif;
-  }
+    .forgot {
+      margin-top: 15px;
+      text-align: center;
+    }
 
-  .erro {
-    color: red;
-    margin-bottom: 15px;
-  }
+    .forgot a {
+      color: #4b4cff;
+      text-decoration: none;
+      font-size: 13px;
+    }
 
-  .forgot {
-    margin-top: 10px;
-    text-align: center;
-  }
+    .forgot a:hover {
+      text-decoration: underline;
+    }
 
-  .forgot a {
-    color: #4b4cff;
-    text-decoration: none;
-  }
-
-  .forgot a:hover {
-    text-decoration: underline;
-  }
-</style>
-
+    .erro {
+      color: red;
+      margin-bottom: 15px;
+      font-size: 14px;
+    }
+  </style>
 </head>
 <body>
 
-  <div class="left">
-    <img src="../gif/auf.gif" alt="Descrição do GIF">
-
-  </div>
+  <div class="left"></div>
 
   <div class="right">
-    <img src="logo.png" class="logo" alt="Logo Augebit" width="100">
-    <h2>Olá, bem-vindo(a)!</h2>
-    <p class="subtitle">Insira seus dados para efetuar o login.</p>
+    <div class="container">
+      <h2>Olá, bem-vindo(a)!</h2>
+      <p class="subtitle">Insira seus dados abaixo para efetuar o login.</p>
 
-    <?php if ($erro): ?>
-      <p class="erro"><?= $erro ?></p>
-    <?php endif; ?>
+      <?php if ($erro): ?>
+        <p class="erro"><?= htmlspecialchars($erro) ?></p>
+      <?php endif; ?>
 
-    <form method="POST">
-      <input type="text" name="email" placeholder="E-mail" required>
-      <input type="password" name="senha" placeholder="Senha" required>
-      
-      <button type="submit">Login</button>
-    </form>
+      <form method="POST">
+        <input type="email" name="email" placeholder="E-mail" required>
+        <input type="password" name="senha" placeholder="Senha" required>
+        <button type="submit">Login</button>
+      </form>
 
-    <div class="forgot">
-      <a href="#">Esqueceu sua senha?</a>
+      <div class="forgot">
+        <a href="#">Esqueceu sua senha?</a>
+      </div>
     </div>
   </div>
 

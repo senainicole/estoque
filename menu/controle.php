@@ -6,7 +6,8 @@
     <button type="submit">Buscar</button>
 </form>
 <?php
-require 'login/conexao.php';
+require('../login/conexao.php');
+
 
 $q = $_GET['q'] ?? '';
 
