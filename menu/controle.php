@@ -1,6 +1,6 @@
 <h2>Controle de Estoque e Inventário</h2>
 <p>Ferramentas para controle e inventário de estoque.</p>
-<form method="get" action="buscar.php">
+<form method="get">
     Buscar produto por nome ou código: 
     <input type="text" name="q" placeholder="Digite nome ou código" required>
     <button type="submit">Buscar</button>
