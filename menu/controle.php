@@ -27,13 +27,6 @@ if ($q !== '') {
 }
 ?>
 
-<h1>Buscar Produtos</h1>
-
-<form method="get" action="buscar.php">
-    Buscar produto por nome ou código: 
-    <input type="text" name="q" placeholder="Digite nome ou código" value="<?= htmlspecialchars($q) ?>" required>
-    <button type="submit">Buscar</button>
-</form>
 
 <?php if ($q !== ''): ?>
     <h2>Resultados para "<?= htmlspecialchars($q) ?>"</h2>
