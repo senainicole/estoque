@@ -7,15 +7,15 @@ $email = $_SESSION['email'] ?? '';
 
 // Define o menu inteiro, para exibir sempre
 $menu_itens = [
-    'recebimento' => 'Recebimento',
-    'armazenagem' => 'Armazenagem',
+    'armazenagem' => 'Recebimento e Armazenagem',
     'controle' => 'Controle de Estoque e Inventário'
 ];
 
 // Define quais páginas o usuário pode acessar conforme final do e-mail
 $permissoes = [];
 if (str_ends_with($email, '@augebit.rec.com')) {
-    $permissoes = ['recebimento'];
+    // Unifica recebimento e armazenagem numa só página 'armazenagem'
+    $permissoes = ['armazenagem'];
 } elseif (str_ends_with($email, '@augebit.arm.com')) {
     $permissoes = ['armazenagem'];
 } elseif (str_ends_with($email, '@augebit.cei.com')) {
@@ -26,7 +26,7 @@ if (str_ends_with($email, '@augebit.rec.com')) {
 }
 
 // Página solicitada (default para a primeira do menu)
-$page = $_GET['page'] ?? 'recebimento';
+$page = $_GET['page'] ?? 'armazenagem';
 
 // Se a página não está no menu, não mostra
 if (!array_key_exists($page, $menu_itens)) {

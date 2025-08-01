@@ -1,8 +1,7 @@
 <?php
 // conexao.php
-
 $host = 'localhost';
-$db   = 'estoque';
+$db   = 'estoque'; // substitua pelo nome do seu banco
 $user = 'root';
 $pass = '';
 $charset = 'utf8mb4';
