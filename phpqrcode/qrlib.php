@@ -1,29 +1,5 @@
 <?php
-/*
- * PHP QR Code encoder
- *
- * Root library file, prepares environment and includes dependencies
- *
- * Based on libqrencode C library distributed under LGPL 2.1
- * Copyright (C) 2006, 2007, 2008, 2009 Kentaro Fukuchi <fukuchi@megaui.net>
- *
- * PHP QR Code is distributed under LGPL 3
- * Copyright (C) 2010 Dominik Dzienia <deltalab at poczta dot fm>
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 3 of the License, or any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
- */
+
 	
 	$QR_BASEDIR = dirname(__FILE__).DIRECTORY_SEPARATOR;
 	
@@ -41,3 +17,126 @@
 	include $QR_BASEDIR."qrmask.php";
 	include $QR_BASEDIR."qrencode.php";
 
+<?php
+// Conexão com o banco
+$pdo = new PDO("mysql:host=localhost;dbname=estoque", "root", "");
+$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+// Inclui a biblioteca PHP QR Code
+include __DIR__ . '/phpqrcode/qrlib.php';
+
+$msg = '';
+$qrFile = '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $nome = $_POST['nome'] ?? '';
+    $codigo = $_POST['codigo'] ?? '';
+    $descricao = $_POST['descricao'] ?? '';
+    $preco = $_POST['preco'] ?? '';
+
+    if ($nome && $codigo && is_numeric($preco)) {
+        // Verifica se o código já existe
+        $verifica = $pdo->prepare("SELECT COUNT(*) FROM produtos WHERE codigo_unico = ?");
+        $verifica->execute([$codigo]);
+
+        if ($verifica->fetchColumn() > 0) {
+            $msg = "Erro: já existe um produto com esse código.";
+        } else {
+            // Insere no banco
+            $stmt = $pdo->prepare("INSERT INTO produtos (nome, codigo_unico, descricao, preco) VALUES (?, ?, ?, ?)");
+            $stmt->execute([$nome, $codigo, $descricao, $preco]);
+
+            // Conteúdo para o QR code
+            $texto = "Produto: $nome\nCódigo: $codigo\nDescrição: $descricao\nPreço: R$ " . number_format($preco, 2, ',', '.');
+
+            // Diretório para salvar QR codes
+            $dir = __DIR__ . '/temp_qr_codes';
+            if (!is_dir($dir)) {
+                mkdir($dir);
+            }
+
+            // Nome do arquivo (hash para evitar duplicados)
+            $filename = $dir . '/qr_' . md5($texto) . '.png';
+
+            // Gera o QR Code PNG
+            QRcode::png($texto, $filename, QR_ECLEVEL_L, 5);
+
+            // Caminho relativo para usar na tag <img>
+            $qrFile = 'temp_qr_codes/qr_' . md5($texto) . '.png';
+
+            $msg = "Produto cadastrado com sucesso!";
+        }
+    } else {
+        $msg = "Preencha todos os campos obrigatórios corretamente.";
+    }
+}
+?>
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <title>Cadastrar Produto</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <style>
+    .fade-out {
+      transition: opacity 1s ease-out;
+      opacity: 1;
+    }
+    .fade-out.hide {
+      opacity: 0;
+    }
+  </style>
+</head>
+<body class="bg-light">
+  <div class="container py-5">
+    <h2>Cadastrar Produto</h2>
+
+    <?php if ($msg): ?>
+      <div id="mensagem" class="alert alert-info mt-3 fade-out"><?= htmlspecialchars($msg) ?></div>
+    <?php endif; ?>
+
+    <form method="POST" class="mt-4">
+      <div class="mb-3">
+        <label class="form-label">Nome do Produto *</label>
+        <input type="text" name="nome" class="form-control" required value="<?= htmlspecialchars($_POST['nome'] ?? '') ?>">
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Código *</label>
+        <input type="text" name="codigo" class="form-control" required value="<?= htmlspecialchars($_POST['codigo'] ?? '') ?>">
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Descrição</label>
+        <textarea name="descricao" class="form-control" rows="3"><?= htmlspecialchars($_POST['descricao'] ?? '') ?></textarea>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Preço (R$) *</label>
+        <input type="number" step="0.01" name="preco" class="form-control" required value="<?= htmlspecialchars($_POST['preco'] ?? '') ?>">
+      </div>
+
+      <button type="submit" class="btn btn-success">Cadastrar Produto</button>
+    </form>
+
+    <?php if ($qrFile): ?>
+      <div class="mt-5">
+        <h5>QR Code do Produto:</h5>
+        <img src="<?= htmlspecialchars($qrFile) ?>" alt="QR Code" class="img-thumbnail" style="max-width: 200px;">
+      </div>
+    <?php endif; ?>
+  </div>
+
+  <script>
+    // Mensagem desaparece após 3 segundos
+    setTimeout(() => {
+      const alerta = document.getElementById('mensagem');
+      if (alerta) {
+        alerta.classList.add('hide');
+        setTimeout(() => alerta.remove(), 1000);
+      }
+    }, 3000);
+  </script>
+</body>
+</html>

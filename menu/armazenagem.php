@@ -11,8 +11,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $codigo = $_POST['codigo'] ?? '';
     $descricao = $_POST['descricao'] ?? '';
     $preco = $_POST['preco'] ?? '';
+    $classificacao = $_POST['classificacao'] ?? '';
 
-    if ($nome && $codigo && is_numeric($preco)) {
+    if ($nome && $codigo && is_numeric($preco) && $classificacao) {
         // Verifica se o código já existe
         $verifica = $pdo->prepare("SELECT COUNT(*) FROM produtos WHERE codigo_unico = ?");
         $verifica->execute([$codigo]);
@@ -20,15 +21,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($verifica->fetchColumn() > 0) {
             $msg = "Erro: já existe um produto com esse código.";
         } else {
-            // Monta o texto do QR code
-            $dados = "Produto: $nome - Código: $codigo - Descrição: $descricao - Preço: R$ " . number_format($preco, 2, ',', '.');
+            // Monta o texto do QR code incluindo a classificação
+            $dados = "Produto: $nome - Código: $codigo - Descrição: $descricao - Preço: R$ " . number_format($preco, 2, ',', '.') . " - Classificação: $classificacao";
 
             // Gera a URL do QR Code (Google Charts API)
             $qrCodeUrl = "https://chart.googleapis.com/chart?cht=qr&chs=200x200&chl=" . urlencode($dados);
 
-            // Insere no banco
-            $stmt = $pdo->prepare("INSERT INTO produtos (nome, codigo_unico, descricao, preco) VALUES (?, ?, ?, ?)");
-            $stmt->execute([$nome, $codigo, $descricao, $preco]);
+            // Insere no banco incluindo classificação
+            $stmt = $pdo->prepare("INSERT INTO produtos (nome, codigo_unico, descricao, preco, classificacao) VALUES (?, ?, ?, ?, ?)");
+            $stmt->execute([$nome, $codigo, $descricao, $preco, $classificacao]);
 
             $msg = "Produto cadastrado com sucesso!";
         }
@@ -81,6 +82,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <div class="mb-3">
         <label class="form-label">Preço (R$) *</label>
         <input type="number" step="0.01" name="preco" class="form-control" required value="<?= htmlspecialchars($_POST['preco'] ?? '') ?>">
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Classificação *</label>
+        <select name="classificacao" class="form-control" required>
+          <option value="" <?= (($_POST['classificacao'] ?? '') === '') ? 'selected' : '' ?>>Selecione</option>
+          <option value="Eletrônicos" <?= (($_POST['classificacao'] ?? '') === 'Eletrônicos') ? 'selected' : '' ?>>Eletrônicos</option>
+          <option value="Informática" <?= (($_POST['classificacao'] ?? '') === 'Informática') ? 'selected' : '' ?>>Informática</option>
+          <option value="Material de escritório" <?= (($_POST['classificacao'] ?? '') === 'Material de escritório') ? 'selected' : '' ?>>Material de escritório</option>
+          <option value="Acessórios de áudio" <?= (($_POST['classificacao'] ?? '') === 'Acessórios de áudio') ? 'selected' : '' ?>>Acessórios de áudio</option>
+          <option value="Eletrônicos vestíveis" <?= (($_POST['classificacao'] ?? '') === 'Eletrônicos vestíveis') ? 'selected' : '' ?>>Eletrônicos vestíveis</option>
+          <option value="Fotografia/Vídeo" <?= (($_POST['classificacao'] ?? '') === 'Fotografia/Vídeo') ? 'selected' : '' ?>>Fotografia/Vídeo</option>
+        </select>
       </div>
 
       <button type="submit" class="btn btn-success">Cadastrar Produto</button>
