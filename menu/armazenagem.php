@@ -5,7 +5,6 @@ $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
 $msg = '';
 $msgTipo = 'info';
-$qrCodeUrl = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nome = trim($_POST['nome'] ?? '');
@@ -23,12 +22,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $msg = "Erro: já existe um produto com esse código.";
             $msgTipo = "danger";
         } else {
-            // Monta o texto do QR Code
-            $dados = "Produto: $nome - Código: $codigo - Descrição: $descricao - Preço: R$ " . number_format($preco, 2, ',', '.') . " - Classificação: $classificacao";
-
-            // URL do Google Charts para o QR Code
-            $qrCodeUrl = "https://chart.googleapis.com/chart?cht=qr&chs=200x200&chl=" . urlencode($dados);
-
             // Insere no banco
             $stmt = $pdo->prepare("INSERT INTO produtos (nome, codigo_unico, descricao, preco, classificacao) VALUES (?, ?, ?, ?, ?)");
             $stmt->execute([$nome, $codigo, $descricao, $preco, $classificacao]);
@@ -103,13 +96,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
       <button type="submit" class="btn btn-success">Cadastrar Produto</button>
     </form>
-
-    <?php if ($qrCodeUrl): ?>
-      <div class="mt-5">
-        <h5>QR Code do Produto:</h5>
-        <img src="<?= $qrCodeUrl ?>" alt="QR Code" class="img-thumbnail" style="max-width: 200px;">
-      </div>
-    <?php endif; ?>
   </div>
 
   <script>
