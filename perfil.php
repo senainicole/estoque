@@ -1,4 +1,17 @@
 <?php
+session_start();
+
+if (!isset($_SESSION['email']) || !isset($_SESSION['nome'])) {
+    echo "Usuário não encontrado.";
+    exit();
+}
+
+$nome = $_SESSION['nome'];
+$email = $_SESSION['email'];
+?>
+
+
+<?php
 $host = 'localhost';
 $db = 'augebital';
 $user = 'root';
