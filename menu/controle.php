@@ -39,7 +39,6 @@ function listarHistorico($pdo, $data_inicio, $data_fim, $ordem, $classificacao =
 }
 
 $aba = $_GET['aba'] ?? 'buscar';
-
 $codigo = $_GET['codigo'] ?? '';
 $produto = $codigo ? buscarProduto($pdo, $codigo) : null;
 
@@ -55,12 +54,12 @@ $produtos = listarHistorico($pdo, $data_inicio, $data_fim, $ordem, $classificaca
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8" />
-  <title>Controle de Estoque e Inventário</title>
+  <title>Teste Busca e Histórico</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
 </head>
 <body class="bg-light">
   <div class="container py-5">
-    <h2>Controle de Estoque e Inventário</h2>
+    <h2>Teste Busca e Histórico</h2>
 
     <ul class="nav nav-tabs mt-4">
       <li class="nav-item">

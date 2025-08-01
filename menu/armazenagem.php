@@ -4,37 +4,41 @@ $pdo = new PDO("mysql:host=localhost;dbname=estoque", "root", "");
 $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
 $msg = '';
+$msgTipo = 'info';
 $qrCodeUrl = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $nome = $_POST['nome'] ?? '';
-    $codigo = $_POST['codigo'] ?? '';
-    $descricao = $_POST['descricao'] ?? '';
+    $nome = trim($_POST['nome'] ?? '');
+    $codigo = trim($_POST['codigo'] ?? '');
+    $descricao = trim($_POST['descricao'] ?? '');
     $preco = $_POST['preco'] ?? '';
     $classificacao = $_POST['classificacao'] ?? '';
 
-    if ($nome && $codigo && is_numeric($preco) && $classificacao) {
-        // Verifica se o código já existe
+    if ($nome && $codigo && is_numeric($preco) && $preco >= 0 && $classificacao) {
+        // Verifica se já existe produto com esse código
         $verifica = $pdo->prepare("SELECT COUNT(*) FROM produtos WHERE codigo_unico = ?");
         $verifica->execute([$codigo]);
 
         if ($verifica->fetchColumn() > 0) {
             $msg = "Erro: já existe um produto com esse código.";
+            $msgTipo = "danger";
         } else {
-            // Monta o texto do QR code incluindo a classificação
+            // Monta o texto do QR Code
             $dados = "Produto: $nome - Código: $codigo - Descrição: $descricao - Preço: R$ " . number_format($preco, 2, ',', '.') . " - Classificação: $classificacao";
 
-            // Gera a URL do QR Code (Google Charts API)
+            // URL do Google Charts para o QR Code
             $qrCodeUrl = "https://chart.googleapis.com/chart?cht=qr&chs=200x200&chl=" . urlencode($dados);
 
-            // Insere no banco incluindo classificação
+            // Insere no banco
             $stmt = $pdo->prepare("INSERT INTO produtos (nome, codigo_unico, descricao, preco, classificacao) VALUES (?, ?, ?, ?, ?)");
             $stmt->execute([$nome, $codigo, $descricao, $preco, $classificacao]);
 
             $msg = "Produto cadastrado com sucesso!";
+            $msgTipo = "success";
         }
     } else {
         $msg = "Preencha todos os campos obrigatórios corretamente.";
+        $msgTipo = "danger";
     }
 }
 ?>
@@ -60,10 +64,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <h2>Cadastrar Produto</h2>
 
     <?php if ($msg): ?>
-      <div id="mensagem" class="alert alert-info mt-3 fade-out"><?= htmlspecialchars($msg) ?></div>
+      <div id="mensagem" class="alert alert-<?= $msgTipo ?> mt-3 fade-out"><?= htmlspecialchars($msg) ?></div>
     <?php endif; ?>
 
-    <form method="POST" class="mt-4">
+    <form method="POST" class="mt-4" novalidate>
       <div class="mb-3">
         <label class="form-label">Nome do Produto *</label>
         <input type="text" name="nome" class="form-control" required value="<?= htmlspecialchars($_POST['nome'] ?? '') ?>">
@@ -81,7 +85,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
       <div class="mb-3">
         <label class="form-label">Preço (R$) *</label>
-        <input type="number" step="0.01" name="preco" class="form-control" required value="<?= htmlspecialchars($_POST['preco'] ?? '') ?>">
+        <input type="number" step="0.01" min="0" name="preco" class="form-control" required value="<?= htmlspecialchars($_POST['preco'] ?? '') ?>">
       </div>
 
       <div class="mb-3">
