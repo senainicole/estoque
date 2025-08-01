@@ -13,7 +13,7 @@ $email = $_SESSION['email'];
 
 <?php
 $host = 'localhost';
-$db = 'augebital';
+$db = 'estoque';
 $user = 'root';
 $pass = '';
 
