@@ -1,74 +1,169 @@
-<h2>Armazenagem</h2>
-<p>Procedimentos de armazenagem de produtos.</p>
-<form method="get" action="buscar.php">
-    Buscar produto por nome ou código: 
-    <input type="text" name="q" placeholder="Digite nome ou código" required>
-    <button type="submit">Buscar</button>
-</form>
 <?php
-require 'login/conexao.php';
-
-$q = $_GET['q'] ?? '';
-
-if ($q !== '') {
-    // Pesquisa usando LIKE para nome e código_unico
-    $sql = "SELECT id, nome, codigo_unico, descricao, preco, qr_code 
-            FROM produtos 
-            WHERE nome LIKE ? OR codigo_unico LIKE ? 
-            ORDER BY id DESC";
-
-    $term = "%$q%";
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute([$term, $term]);
-    $produtos = $stmt->fetchAll(PDO::FETCH_ASSOC);
-} else {
-    $produtos = [];
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
 }
+
+
+// Pegando o email do colaborador da sessão
+$nome = $_SESSION['nome'] ?? '';
+$email = $_SESSION['email'] ?? '';
+
+// Define o menu inteiro, para exibir sempre
+$menu_itens = [
+    'armazenagem' => 'Recebimento e Armazenagem',
+    'controle' => 'Controle de Estoque e Inventário'
+];
+
+// Define quais páginas o usuário pode acessar conforme final do e-mail
+$permissoes = [];
+if (str_ends_with($email, '@augebit.rec.com')) {
+    // Unifica recebimento e armazenagem numa só página 'armazenagem'
+    $permissoes = ['armazenagem'];
+} elseif (str_ends_with($email, '@augebit.arm.com')) {
+    $permissoes = ['armazenagem'];
+} elseif (str_ends_with($email, '@augebit.cei.com')) {
+    $permissoes = ['controle'];
+} else {
+    echo "Página não encontrada ou acesso não permitido.";
+    exit();
+}
+
+// Página solicitada (default para a primeira do menu)
+$page = $_GET['page'] ?? 'armazenagem';
+
+// Se a página não está no menu, não mostra
+if (!array_key_exists($page, $menu_itens)) {
+    echo "<p>Página não encontrada.</p>";
+    exit();
+}
+
+// Se o usuário não tem permissão para acessar o conteúdo da página selecionada,
+// não inclui o conteúdo
+$mostra_conteudo = in_array($page, $permissoes);
 ?>
 
-<h1>Buscar Produtos</h1>
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <title>Painel | Augebit</title>
 
-<form method="get" action="buscar.php">
-    Buscar produto por nome ou código: 
-    <input type="text" name="q" placeholder="Digite nome ou código" value="<?= htmlspecialchars($q) ?>" required>
-    <button type="submit">Buscar</button>
-</form>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
 
-<?php if ($q !== ''): ?>
-    <h2>Resultados para "<?= htmlspecialchars($q) ?>"</h2>
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
 
-    <?php if (count($produtos) > 0): ?>
-        <table border="1" cellpadding="5" cellspacing="0">
-            <tr>
-                <th>ID</th>
-                <th>Nome</th>
-                <th>Código Único</th>
-                <th>Descrição</th>
-                <th>Preço</th>
-                <th>QR Code</th>
-            </tr>
-            <?php foreach ($produtos as $produto): ?>
-                <tr>
-                    <td><?= htmlspecialchars($produto['id']) ?></td>
-                    <td><?= htmlspecialchars($produto['nome']) ?></td>
-                    <td><?= htmlspecialchars($produto['codigo_unico']) ?></td>
-                    <td><?= htmlspecialchars($produto['descricao']) ?></td>
-                    <td><?= number_format($produto['preco'], 2, ',', '.') ?></td>
-                    <td>
-                        <?php if ($produto['qr_code']): ?>
-                            <?php
-                                $base64 = base64_encode($produto['qr_code']);
-                                echo "<img src='data:image/png;base64,{$base64}' alt='QR Code' style='width:100px; height:100px;'>";
-                            ?>
-                        <?php else: ?>
-                            Sem QR Code
-                        <?php endif; ?>
-                    </td>
-                </tr>
-            <?php endforeach; ?>
-        </table>
+  <style>
+    body {
+      padding-top: 70px; /* espaço para navbar fixa */
+      font-family: Arial, sans-serif;
+    }
+    .navbar-brand i,
+    .nav-link i {
+      font-size: 1.2rem;
+    }
+    /* Menu dinâmico abaixo da navbar */
+    nav.menu-dinamico {
+      margin-top: 15px;
+      margin-bottom: 15px;
+    }
+    nav.menu-dinamico a {
+      margin-right: 20px;
+      text-decoration: none;
+      color: #333;
+      font-weight: 600;
+      border-bottom: 2px solid transparent;
+      padding-bottom: 2px;
+      font-size: 1.1rem;
+    }
+    nav.menu-dinamico a:hover {
+      color: #0d6efd; /* bootstrap primary */
+      border-color: #0d6efd;
+    }
+    nav.menu-dinamico a.active {
+      color: #0d6efd;
+      border-color: #0d6efd;
+    }
+    .msg-permissao {
+      color: red;
+      font-weight: bold;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar fixa no topo -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top shadow">
+    <div class="container-fluid">
+
+      <a class="navbar-brand d-flex align-items-center" href="../dashboard/dashboard.php">
+        Dashboard
+      </a>
+
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarHeader" aria-controls="navbarHeader" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+     <div class="collapse navbar-collapse justify-content-end" id="navbarHeader">
+  <ul class="navbar-nav">
+
+    <!-- Home -->
+    <li class="nav-item">
+      <a class="nav-link d-flex align-items-center" href="../menu/menu.php" title="Home">
+        <i class="bi bi-house-door me-1"></i> Home
+      </a>
+    </li>
+
+    <!-- Perfil -->
+    <li class="nav-item">
+      <a class="nav-link d-flex align-items-center" href="../perfil.php" title="Perfil">
+        <i class="bi bi-person-circle me-1"></i>
+      </a>
+    </li>
+
+    <!-- Sair -->
+    <li class="nav-item">
+      <a class="nav-link d-flex align-items-center" href="../login/logout.php" title="Sair">
+        <i class="bi bi-box-arrow-right me-1"></i>
+      </a>
+    </li>
+
+  </ul>
+</div>
+
+    </div>
+  </nav>
+
+  <!-- Menu dinâmico com permissões -->
+  <div class="container">
+    <nav class="menu-dinamico">
+      <?php foreach ($menu_itens as $key => $label): ?>
+        <a href="?page=<?= htmlspecialchars($key) ?>" class="<?= $page === $key ? 'active' : '' ?>">
+          <?= htmlspecialchars($label) ?>
+        </a>
+      <?php endforeach; ?>
+    </nav>
+  </div>
+
+  <div class="container">
+    <?php if ($mostra_conteudo): ?>
+      <?php
+      $file = __DIR__ . '/' . $page . '.php';
+      if (file_exists($file)) {
+          include $file;
+      } else {
+          echo "<p>Página solicitada não encontrada.</p>";
+      }
+      ?>
     <?php else: ?>
-        <p>Nenhum produto encontrado.</p>
+      <p class="msg-permissao">Você não tem permissão para acessar o conteúdo desta página.</p>
     <?php endif; ?>
+  </div>
 
-<?php endif; ?>
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

@@ -1,5 +1,8 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
 
 // Pegando o email do colaborador da sessão
 $nome = $_SESSION['nome'] ?? '';
